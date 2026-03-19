@@ -40,6 +40,22 @@ function createLogHeal(healing) {
   };
 }
 
+function getBattleResult(playerHealth, monsterHealth) {
+  if (playerHealth <= 0 && monsterHealth <= 0) {
+    return "draw";
+  }
+
+  if (monsterHealth <= 0) {
+    return "won";
+  }
+
+  if (playerHealth <= 0) {
+    return "lost";
+  }
+
+  return null;
+}
+
 function Game() {
   // ----------------------------------------------------------------------------------------------------------
   // STATES & VARIABLES
@@ -58,16 +74,24 @@ function Game() {
     setLogs((currentLogs) => [entry, ...currentLogs]);
   }
 
-  function handleMonsterAttack(currentPlayerHp) {
+  function updateWinner(playerHealth, monsterHealth) {
+    const battleResult = getBattleResult(playerHealth, monsterHealth);
+
+    if (battleResult) {
+      setWinner(battleResult);
+      return true;
+    }
+
+    return false;
+  }
+
+  function handleMonsterAttack(currentPlayerHp, currentMonsterHp) {
     const monsterDamage = getRandomValue(5, 13);
     const updatedPlayerHp = Math.max(currentPlayerHp - monsterDamage, 0);
 
     setPlayerHp(updatedPlayerHp);
     addLogEntry(createLogAttack(true, monsterDamage));
-
-    if (updatedPlayerHp <= 0) {
-      setWinner("lost");
-    }
+    updateWinner(updatedPlayerHp, currentMonsterHp);
   }
 
   function handleAttack() {
@@ -82,12 +106,11 @@ function Game() {
     addLogEntry(createLogAttack(false, playerDamage));
     setTurn((prev) => prev + 1);
 
-    if (updatedMonsterHp <= 0) {
-      setWinner("won");
+    if (updateWinner(playerHp, updatedMonsterHp)) {
       return;
     }
 
-    handleMonsterAttack(playerHp);
+    handleMonsterAttack(playerHp, updatedMonsterHp);
   }
 
   function handleSpecial() {
@@ -102,12 +125,11 @@ function Game() {
     addLogEntry(createLogAttack(false, specialDamage));
     setTurn((prev) => prev + 1);
 
-    if (updatedMonsterHp <= 0) {
-      setWinner("won");
+    if (updateWinner(playerHp, updatedMonsterHp)) {
       return;
     }
 
-    handleMonsterAttack(playerHp);
+    handleMonsterAttack(playerHp, updatedMonsterHp);
   }
 
   function handleHeal() {
@@ -121,7 +143,7 @@ function Game() {
     setPlayerHp(updatedPlayerHp);
     addLogEntry(createLogHeal(healValue));
     setTurn((prev) => prev + 1);
-    handleMonsterAttack(updatedPlayerHp);
+    handleMonsterAttack(updatedPlayerHp, monsterHp);
   }
 
   function handleKill() {

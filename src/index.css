@@ -61,6 +61,11 @@ section {
   color: #b42318;
 }
 
+.result-screen--draw {
+  background: #e8eefb;
+  color: #1d4ed8;
+}
+
 .controls {
   display: grid;
   grid-template-columns: repeat(2, 12rem);
